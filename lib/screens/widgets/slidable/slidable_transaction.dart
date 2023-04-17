@@ -1,30 +1,21 @@
-
-
-
-import 'package:wealthify/db/db_functions/transaction_functions.dart';
+import 'package:provider/provider.dart';
 import 'package:wealthify/db/models/category_model/category_model.dart/category_model.dart';
 import 'package:wealthify/db/models/transaction_model/transaction_model.dart';
+import 'package:wealthify/parse_date/parse_date.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 import 'package:wealthify/screens/widgets/edit_transaction.dart/edit_expense_transaction.dart';
 import 'package:wealthify/screens/widgets/edit_transaction.dart/edit_income_transaction.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:intl/intl.dart';
 
-
-
 class SlidableTransaction extends StatelessWidget {
-  const SlidableTransaction({super.key,required this.transaction});
+  const SlidableTransaction({super.key, required this.transaction});
 
   final TransactionModel transaction;
 
-    String parseDateTime(DateTime date) {
-    final dateFormatted = DateFormat.MMMMd().format(date);
-    //using split we split the date into two parts
-    final splitedDate = dateFormatted.split(' ');
-    //here _splitedDate.last is second word that is month name and other one is the first word
-    return "${splitedDate.last}  ${splitedDate.first} ";
-  }
   @override
   Widget build(BuildContext context) {
     return Slidable(
@@ -35,18 +26,15 @@ class SlidableTransaction extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: ((context) {
-                  if (transaction.type==CategoryType.expense){
-                          return EditExpenseTransaction(
-                          obj: transaction,
-                  );
+                  if (transaction.type == CategoryType.expense) {
+                    return EditExpenseTransaction(
+                      obj: transaction,
+                    );
+                  } else {
+                    return EditIncomeTransaction(
+                      obj: transaction,
+                    );
                   }
-                  else
-                   {
-                     return EditIncomeTransaction(
-                    obj: transaction,
-                  );
-                   }
-                 
                 }),
               ),
             );
@@ -66,7 +54,8 @@ class SlidableTransaction extends StatelessWidget {
                     actions: [
                       TextButton(
                           onPressed: (() {
-                            TransactionDB.instance
+                            Provider.of<ProviderTransaction>(context,
+                                    listen: false)
                                 .deleteTransaction(transaction);
                             Navigator.of(context).pop();
                           }),
@@ -102,12 +91,10 @@ class SlidableTransaction extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         child: ListTile(
-          
           onLongPress: () {},
           leading: CircleAvatar(
             backgroundColor: Colors.black,
             radius: 50,
-          
             child: Icon(
               transaction.type == CategoryType.income
                   ? Icons.arrow_upward_outlined
@@ -132,5 +119,3 @@ class SlidableTransaction extends StatelessWidget {
     );
   }
 }
-
-  

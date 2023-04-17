@@ -1,7 +1,12 @@
 import 'package:provider/provider.dart';
 import 'package:wealthify/db/models/category_model/category_model.dart/category_model.dart';
 import 'package:wealthify/db/models/transaction_model/transaction_model.dart';
+import 'package:wealthify/provider/add_transaction_provider.dart';
+import 'package:wealthify/provider/category_provider.dart';
+import 'package:wealthify/provider/category_type_provider.dart';
+import 'package:wealthify/provider/income_expense.dart';
 import 'package:wealthify/provider/onboarding_screen.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 import 'package:wealthify/screens/home/screen_root.dart';
 import 'package:wealthify/screens/home/screen_transaction_home.dart';
 import 'package:wealthify/screens/introduction_pages/onboarding_screens/onboarding.dart';
@@ -38,7 +43,22 @@ class CashTrack extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (BuildContext context) => ProviderTransaction(),
+        ),
+        ChangeNotifierProvider(
           create: (BuildContext context) => OnBoardingProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (BuildContext context) => IncomeAndExpense(),
+        ),
+        ChangeNotifierProvider(
+          create: (BuildContext context) => CategoryProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (BuildContext context) => AddTransactionProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (BuildContext context) => CategoryTypeProvider(),
         ),
       ],
       child: MaterialApp(
@@ -50,7 +70,7 @@ class CashTrack extends StatelessWidget {
         routes: {
           '/': (context) => const SplashScreen(),
           '/root': (context) => RootPage(),
-          '/home': (context) => const HomeScreen(),
+          '/home': (context) => HomeScreen(),
           '/onboard': (context) => Onboarding(),
         },
       ),

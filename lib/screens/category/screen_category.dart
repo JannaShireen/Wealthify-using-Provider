@@ -1,6 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:wealthify/provider/category_provider.dart';
-import 'package:wealthify/screens/category/category_add_popup.dart';
+import 'package:wealthify/screens/category/category_bottom_sheet.dart.dart';
 import 'package:wealthify/screens/category/expense_category_list.dart';
 import 'package:wealthify/screens/category/income_category_list.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +61,8 @@ class ScreenCategory extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black,
           onPressed: () {
-            showCategoryPopup(context);
+                      categoryShowBottomSheetApp(context);
+
 
             // print('Add something');
           },

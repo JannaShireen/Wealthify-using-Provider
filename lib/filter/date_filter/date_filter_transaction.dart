@@ -1,14 +1,13 @@
-
-
-import 'package:wealthify/db/db_functions/transaction_functions.dart';
+import 'package:provider/provider.dart';
 import 'package:custom_date_range_picker/custom_date_range_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:wealthify/transactions/list_view_all.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 
-import '../../transactions/transaction.list.dart';
+
+
 
 class DAteFilterTransaction extends StatefulWidget {
-  const DAteFilterTransaction({
+   DAteFilterTransaction({
     Key? key,
   }) : super(key: key);
 
@@ -18,9 +17,12 @@ class DAteFilterTransaction extends StatefulWidget {
 
 class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
   DateTime? startDate,endDate;
+
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<int>(
+    return Consumer<ProviderTransaction>(
+        builder: (context, showCategory, child) {
+      return PopupMenuButton<int>(
       shape: ContinuousRectangleBorder(
         borderRadius: BorderRadius.circular(
           20,
@@ -38,8 +40,8 @@ class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
             "All",
           ),
           onTap: () {
-            overViewListNotifier.value =
-                TransactionDB.instance.transactionListNotifier.value;
+            showCategory.setOverviewTransactions =
+                  showCategory.transactionListProvider;
           },
         ),
         PopupMenuItem(
@@ -48,14 +50,15 @@ class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
             "Today",
           ),
           onTap: () {
-            overViewListNotifier.value =
-                TransactionDB.instance.transactionListNotifier.value;
-            overViewListNotifier.value = overViewListNotifier.value
-                .where((element) =>
-                    element.date.day == DateTime.now().day &&
-                    element.date.month == DateTime.now().month &&
-                    element.date.year == DateTime.now().year)
-                .toList();
+           showCategory.setOverviewTransactions =
+                  showCategory.transactionListProvider;
+              showCategory.setOverviewTransactions = showCategory
+                  .overviewTransactions
+                  .where((element) =>
+                      element.date.day == DateTime.now().day &&
+                      element.date.month == DateTime.now().month &&
+                      element.date.year == DateTime.now().year)
+                  .toList();
           },
         ),
         PopupMenuItem(
@@ -64,14 +67,15 @@ class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
               "Yesterday",
             ),
             onTap: () {
-              overViewListNotifier.value =
-                  TransactionDB.instance.transactionListNotifier.value;
-              overViewListNotifier.value = overViewListNotifier.value
-                  .where((element) =>
-                      element.date.day == DateTime.now().day - 1 &&
-                      element.date.month == DateTime.now().month &&
-                      element.date.year == DateTime.now().year)
-                  .toList();
+              showCategory.setOverviewTransactions =
+                    showCategory.transactionListProvider;
+                showCategory.setOverviewTransactions = showCategory
+                    .overviewTransactions
+                    .where((element) =>
+                        element.date.day == DateTime.now().day - 1 &&
+                        element.date.month == DateTime.now().month &&
+                        element.date.year == DateTime.now().year)
+                    .toList();
             }),
         PopupMenuItem(
             value: 2,
@@ -79,13 +83,15 @@ class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
               "Month",
             ),
             onTap: () {
-              overViewListNotifier.value =
-                  TransactionDB.instance.transactionListNotifier.value;
-              overViewListNotifier.value = overViewListNotifier.value
-                  .where((element) =>
-                      element.date.month == DateTime.now().month &&
-                      element.date.year == DateTime.now().year)
-                  .toList();
+             showCategory.setOverviewTransactions =
+                    showCategory.transactionListProvider;
+                showCategory.setOverviewTransactions = showCategory
+                    .overviewTransactions
+                    .where((element) =>
+                        element.date.month == DateTime.now().month &&
+                        element.date.year == DateTime.now().year)
+                    .toList();
+              
             }),
             PopupMenuItem(
             value: 2,
@@ -115,9 +121,9 @@ class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
                   );
                   //print('start date $startDate , end date $endDate');
 
-                  overViewListNotifier.value =
-                  TransactionDB.instance.transactionListNotifier.value;
-              overViewListNotifier.value = overViewListNotifier.value
+                  showCategory.setOverviewTransactions =
+                  showCategory.transactionListProvider;
+              showCategory.setOverviewTransactions = showCategory.overviewTransactions
                   .where((element) =>
                       element.date.isAfter(startDate!) && element.date.isBefore(endDate!))
                   .toList();
@@ -128,5 +134,6 @@ class _DAteFilterTransactionState extends State<DAteFilterTransaction> {
             
       ],
     );
-  }
+  });
+}
 }

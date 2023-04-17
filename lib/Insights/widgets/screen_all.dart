@@ -1,49 +1,35 @@
-
+import 'package:provider/provider.dart';
 import 'package:wealthify/db/db_functions/income_and_expense.dart';
-import 'package:wealthify/db/db_functions/transaction_functions.dart';
 import 'package:wealthify/db/models/transaction_model/transaction_model.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 
-ValueNotifier<List<TransactionModel>> overViewGraphNotifier =
-    ValueNotifier(TransactionDB.instance.transactionListNotifier.value);
+// ValueNotifier<List<TransactionModel>> overViewGraphNotifier =
+//     ValueNotifier(TransactionDB.instance.transactionListNotifier.value);
 
-class ScreenAll extends StatefulWidget {
-  const ScreenAll({super.key});
+class ScreenAll extends StatelessWidget {
+  ScreenAll({super.key});
 
-  @override
-  State<ScreenAll> createState() => _ScreenAll();
-}
-
-class _ScreenAll extends State<ScreenAll> {
-  late TooltipBehavior _tooltipBehavior;
-
-  @override
-  void initState() {
-    _tooltipBehavior = TooltipBehavior(enable: true);
-    super.initState();
-  }
+  late TooltipBehavior _tooltipBehavior = TooltipBehavior(enable: true);
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Color.fromARGB(255, 205, 204, 204),
-        body: ValueListenableBuilder(
-          valueListenable: overViewGraphNotifier,
-          builder: (BuildContext context, List<TransactionModel> newList,
-              Widget? child) {
-            Map incomeMap = {'name': 'Income', "amount": incomeTotal.value};
-            Map expenseMap = {"name": "Expense", "amount": expenseTotal.value};
+        body: Consumer<ProviderTransaction>(
+          builder: (context, value, child) {
+            Map incomeMap = {'name': 'Income', "amount": value.incomeTotal};
+            Map expenseMap = {"name": "Expense", "amount": value.expenseTotal};
             List<Map> totalMap = [incomeMap, expenseMap];
-            return overViewGraphNotifier.value.isEmpty
+            return value.overviewGraphTransactions.isEmpty
                 ? SingleChildScrollView(
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: const [
                           Center(child: Text('No data Found')),
-                          
                         ],
                       ),
                     ),

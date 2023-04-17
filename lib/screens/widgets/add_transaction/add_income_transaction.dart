@@ -1,3 +1,4 @@
+import 'package:provider/provider.dart';
 import 'package:wealthify/db/db_functions/db_category_functions.dart';
 
 import 'package:wealthify/db/models/category_model/category_model.dart/category_model.dart';
@@ -5,6 +6,9 @@ import 'package:wealthify/db/models/transaction_model/transaction_model.dart';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:wealthify/provider/add_transaction_provider.dart';
+import 'package:wealthify/provider/category_provider.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 
 class ScreenAddIncomeTransaction extends StatelessWidget {
   ScreenAddIncomeTransaction({super.key});
@@ -21,10 +25,13 @@ class ScreenAddIncomeTransaction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<ProviderTransaction>(context).refreshUi();
+    Provider.of<CategoryProvider>(context).refreshUI();
+
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 205, 204, 204),
       appBar: AppBar(
-        title: Text('Add Income'),
+        title: Text('Add Income Transaction'),
         backgroundColor: Color.fromARGB(255, 11, 6, 6),
       ),
       body: SafeArea(
@@ -91,58 +98,75 @@ class ScreenAddIncomeTransaction extends StatelessWidget {
                           keyboardType: TextInputType.number,
                         ),
 
-                        TextButton.icon(
-                          onPressed: () async {
-                            final _selectedDateTemp = await showDatePicker(
-                              context: context,
-                              initialDate: DateTime.now(),
-                              firstDate: DateTime.now()
-                                  .subtract(const Duration(days: 30)),
-                              lastDate: DateTime.now(),
-                            );
-
-                            if (_selectedDateTemp == null) {
-                              return;
-                            } else {
-                              print(_selectedDateTemp.toString());
-                              setState(() {
-                                _selectedDate = _selectedDateTemp;
-                              });
-                            }
-                          },
-                          icon: const Icon(Icons.calendar_today),
-                          label: Text(_selectedDate == null
-                              ? 'Select Date'
-                              : DateFormat("dd/MMMM/yyyy")
-                                  .format(_selectedDate!)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 0, vertical: 10),
+                          child: Center(
+                            child: Consumer<AddTransactionProvider>(
+                                builder: (context, value, child) {
+                              return TextButton(
+                                style: ElevatedButton.styleFrom(
+                                  side: const BorderSide(width: 1.0),
+                                  // backgroundColor: themeDarkBlue,
+                                  foregroundColor: Colors.blue,
+                                  // primary: Colors.black,
+                                  minimumSize: const Size.fromHeight(50), // NEW
+                                ),
+                                onPressed: (() async {
+                                  final selectedTempDate = await showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime.now().subtract(
+                                        const Duration(
+                                          days: 30,
+                                        ),
+                                      ),
+                                      lastDate: DateTime.now(),
+                                      helpText: 'select a Date');
+                                  value.dateSelection(selectedTempDate);
+                                }),
+                                child: Text(
+                                  value.selectedDateTime == null
+                                      // ? 'Select Date'
+                                      ? parseDateTime(DateTime.now())
+                                      : parseDateTime(context
+                                          .read<AddTransactionProvider>()
+                                          .selectedDateTime),
+                                ),
+                              );
+                            }),
+                          ),
                         ),
+                        Consumer2<AddTransactionProvider, CategoryProvider>(
+                          builder: (context, tProvider, cProvider, child) {
+                            return DropdownButtonFormField<String>(
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Select category";
+                                }
+                                return null;
+                              },
+                              hint: const Text('Select Income'),
+                              value: tProvider.categoryId,
+                              items: cProvider.incomeCategoryProvider.map((e) {
+                                return DropdownMenuItem(
+                                  value: e.id,
+                                  child: Text(e.name),
+                                  onTap: () {
+                                    Provider.of<CategoryProvider>(context)
+                                        .refreshUI();
 
-                        DropdownButtonFormField<String>(
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "Select category";
-                            }
-                            return null;
-                          },
-                          hint: const Text('Select Income'),
-                          value: _categoryID,
-                          items: CategoryDB()
-                              .incomeCategoryListListener
-                              .value
-                              .map((e) {
-                            return DropdownMenuItem(
-                              value: e.id,
-                              child: Text(e.name),
-                              onTap: () {
-                                _selectedCategoryModel = e;
+                                    tProvider.selectedCategoryModel = e;
+                                  },
+                                );
+                              }).toList(),
+                              onChanged: (selectedValue) {
+                                print(selectedValue);
+                                tProvider.categoryId = selectedValue;
+                                // setState(() {
+                                //   _categoryID = selectedValue;
                               },
                             );
-                          }).toList(),
-                          onChanged: (selectedValue) {
-                            print(selectedValue);
-                            setState(() {
-                              _categoryID = selectedValue;
-                            });
                           },
                         ),
 
@@ -157,7 +181,7 @@ class ScreenAddIncomeTransaction extends StatelessWidget {
                                         Text('Transaction Added Successfully')),
                               );
                             }
-                            submitAddIncomeTransaction();
+                            submitAddIncomeTransaction(context);
                           },
                           child: Text('Submit'),
                         ),
@@ -173,7 +197,15 @@ class ScreenAddIncomeTransaction extends StatelessWidget {
     );
   }
 
-  Future<void> submitAddIncomeTransaction() async {
+  String parseDateTime(DateTime date) {
+    final dateFormatted = DateFormat.MMMMd().format(date);
+    //using split we split the date into two parts
+    final splitedDate = dateFormatted.split(' ');
+    //here _splitedDate.last is second word that is month name and other one is the first word
+    return "${splitedDate.last}  ${splitedDate.first} ";
+  }
+
+  Future<void> submitAddIncomeTransaction(context) async {
     final _purposeText = _purposeTextEditingController.text;
     final _amountText = _amountTextEditingController.text;
 
@@ -203,15 +235,16 @@ class ScreenAddIncomeTransaction extends StatelessWidget {
     final model = TransactionModel(
       purpose: _purposeText,
       amount: parsedAmount,
-      date: _selectedDate!,
+      date: Provider.of<AddTransactionProvider>(context, listen: false)
+          .selectedDateTime,
       type: CategoryType.income,
-      category: _selectedCategoryModel!,
+      category: Provider.of<AddTransactionProvider>(context, listen: false)
+          .selectedCategoryModel!,
       id: DateTime.now().microsecondsSinceEpoch.toString(),
     );
-
-    await TransactionDB.instance.addTransaction(model);
+    await Provider.of<ProviderTransaction>(context, listen: false)
+        .addTransaction(model);
+    // await TransactionDB.instance.addTransaction(model);
     Navigator.of(context).pop();
-
-    TransactionDB.instance.refresh();
   }
 }

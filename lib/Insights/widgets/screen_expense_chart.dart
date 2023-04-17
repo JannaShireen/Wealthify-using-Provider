@@ -1,3 +1,4 @@
+import 'package:provider/provider.dart';
 import 'package:wealthify/Insights/widgets/screen_all.dart';
 import 'package:wealthify/db/models/category_model/category_model.dart/category_model.dart';
 import 'package:wealthify/db/models/transaction_model/transaction_model.dart';
@@ -5,28 +6,22 @@ import 'package:wealthify/db/models/transaction_model/transaction_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 
-class ScreenExpenseChart extends StatefulWidget {
-  const ScreenExpenseChart({super.key});
+class ScreenExpenseChart extends StatelessWidget {
+  ScreenExpenseChart({super.key});
 
-  @override
-  State<ScreenExpenseChart> createState() => _ScreenExpenseChartState();
-}
-
-class _ScreenExpenseChartState extends State<ScreenExpenseChart> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Color.fromARGB(255, 205, 204, 204),
-        body: ValueListenableBuilder(
-          valueListenable: overViewGraphNotifier,
-          builder: (BuildContext context, List<TransactionModel> newList,
-              Widget? child) {
-            var allIncome = newList
+        body: Consumer<ProviderTransaction>(
+          builder: (context, value, child) {
+            var allIncome = value.overviewGraphTransactions
                 .where((element) => element.type == CategoryType.expense)
                 .toList();
-            return overViewGraphNotifier.value.isEmpty
+            return allIncome.isEmpty
                 ? SingleChildScrollView(
                     child: Center(
                       child: Column(

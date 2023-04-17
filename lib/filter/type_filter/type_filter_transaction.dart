@@ -1,4 +1,5 @@
-import 'package:wealthify/transactions/list_view_all.dart';
+import 'package:provider/provider.dart';
+import 'package:wealthify/provider/transaction_provider.dart';
 import 'package:flutter/material.dart';
 
 class TypeFilterClass extends StatelessWidget {
@@ -6,6 +7,8 @@ class TypeFilterClass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<ProviderTransaction>(
+        builder: (context, showCategory, child) {
     return PopupMenuButton(
         shape: ContinuousRectangleBorder(
           borderRadius: BorderRadius.circular(
@@ -15,17 +18,17 @@ class TypeFilterClass extends StatelessWidget {
         itemBuilder: ((context) => [
               PopupMenuItem(
                 value: 1,
-                onTap: () => showCategory.value = "All",
+                onTap: () => showCategory.setShowCategory = "All",
                 child: const Text("All"),
               ),
               PopupMenuItem(
                 value: 2,
-                onTap: () => showCategory.value = "Income",
+                onTap: () => showCategory.setShowCategory = "Income",
                 child: const Text("Income"),
               ),
               PopupMenuItem(
                 value: 3,
-                onTap: () => showCategory.value = "Expense",
+                onTap: () => showCategory.setShowCategory = "Expense",
                 child: const Text("Expense"),
               ),
             ]),
@@ -34,5 +37,7 @@ class TypeFilterClass extends StatelessWidget {
           size: 30,
           // shadows: <Shadow>[Shadow(color: Colors.white, blurRadius: 15.0)],
         ));
+  });
+  
   }
 }

@@ -1,7 +1,9 @@
 
 
-import 'package:wealthify/db/db_functions/transaction_functions.dart';
-import 'package:wealthify/transactions/transaction.list.dart';
+import 'package:provider/provider.dart';
+
+import 'package:wealthify/provider/transaction_provider.dart';
+
 import 'package:flutter/material.dart';
 
 
@@ -27,7 +29,7 @@ class SearchField extends StatelessWidget {
           child: TextField(
             controller: _searchQueryController,
             onChanged: (query) {print(query);
-              searchResult(query);
+              searchResult(query,context);
               // overViewListNotifier.notifyListeners();
             },
             decoration: InputDecoration(
@@ -39,9 +41,9 @@ class SearchField extends StatelessWidget {
                 ),
                 suffixIcon: IconButton(
                     onPressed: () {
-                      overViewListNotifier.value =
-                          TransactionDB.instance.transactionListNotifier.value;
-                      _searchQueryController.clear();
+                     Provider.of<ProviderTransaction>(context,listen:false).overviewTransactions=
+                     Provider.of<ProviderTransaction>(context,listen:false).transactionListProvider;
+                     Provider.of<ProviderTransaction>(context,listen:false).notifyListeners();
                     },
                     icon: const Icon(
                       Icons.close,
@@ -52,26 +54,29 @@ class SearchField extends StatelessWidget {
       ),
     );
   }
+}
 
-  searchResult(String query) {
-    debugPrint(query);
+  searchResult(String query, BuildContext context ){
+ 
     if (query.isEmpty) {
-      overViewListNotifier.value =
-          TransactionDB.instance.transactionListNotifier.value;
+      Provider.of<ProviderTransaction>(context,listen:false).overviewTransactions =
+          Provider.of<ProviderTransaction>(context,listen:false).transactionListProvider;
+          Provider.of<ProviderTransaction>(context,listen:false).notifyListeners();
     } else {
      // overViewListNotifier.value.map((e) => debugPrint(e.purpose));
     
-      overViewListNotifier.value = overViewListNotifier.value
+    Provider.of<ProviderTransaction>(context,listen:false).overviewTransactions
+    = Provider.of<ProviderTransaction>(context,listen:false).overviewTransactions
           .where((element) =>
            element.category.name.toString()
               .toLowerCase()
               .contains(query.trim().toLowerCase())||element.purpose.contains(query.trim().toLowerCase()))
 
           .toList() ;
+          Provider.of<ProviderTransaction>(context,listen:false).notifyListeners();
           
       
 
           //data.category.name.toString().toLowerCase().contains(query.toLowerCase()) || data.purpose.toLowerCase().contains(query.toLowerCase())
     }
   }
-}

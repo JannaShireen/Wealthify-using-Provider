@@ -1,151 +1,161 @@
-import 'package:wealthify/db/db_functions/db_category_functions.dart';
-
-import 'package:flutter/foundation.dart';
+import 'package:animated_snack_bar/animated_snack_bar.dart';
 import 'package:flutter/material.dart';
 
-import '../../db/models/category_model/category_model.dart/category_model.dart';
+import 'package:provider/provider.dart';
+import 'package:wealthify/db/models/category_model/category_model.dart/category_model.dart';
+import 'package:wealthify/provider/category_provider.dart';
+import 'package:wealthify/provider/category_type_provider.dart';
 
-ValueNotifier<CategoryType> selectedCategoryNotifier = ValueNotifier(CategoryType.income);
+categoryShowBottomSheetApp(BuildContext context) async {
+  final formKey = GlobalKey<FormState>();
+  final nameEditingController = TextEditingController();
+  showModalBottomSheet(
+      // backgroundColor: Colors.transparent,
+      context: context,
+      builder: ((context) {
+        return Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            child: SizedBox(
+              height: 700,
+              // width: 200,
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    child: Center(
+                        child: Text(
+                      'Add Category',
+                      style: TextStyle(fontSize: 18),
+                    )),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: const [
+                        RadioButton(title: 'Income', type: CategoryType.income),
+                        RadioButton(
+                            title: 'Expense', type: CategoryType.expense),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: TextFormField(
+                      controller: nameEditingController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Enter Category';
+                        }
+                        return null;
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Category Name',
+                        // floatingLabelStyle: TextStyle(
+                        //   color: Colors.black,
+                        // ),
+                       
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(
+                          20,
+                        ),
+                      ),
+                      child: Consumer<CategoryTypeProvider>(
+                          builder: (context, value, child) {
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shape: const StadiumBorder(),
+                          ),
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              // If the form is valid, display a snackbar. In the real world,
 
-Future<void> showCategoryPopup(BuildContext context) async{
- final _nameEditingController= TextEditingController();
-  showDialog(
-    context: context, 
-    builder: (ctx){
-        return SimpleDialog(
-          title: const Text('Add Category'),
-          children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                                  controller: _nameEditingController,
-                                    decoration: const InputDecoration(
-                                     border: OutlineInputBorder(),
-                                     hintText: 'Category Name',
-                                         ),
-                                     ),
-                     ),
+                              AnimatedSnackBar.rectangle(
+                                'Success',
+                                'Category Added Successfully',
+                                type: AnimatedSnackBarType.success,
+                                brightness: Brightness.light,
+                                duration: const Duration(
+                                  seconds: 3,
+                                ),
+                              ).show(
+                                context,
+                              );
+                            }
+                            final name = nameEditingController.text;
+                            if (name.isEmpty) {
+                              return;
+                            }
+                            // final type =
+                            //     CategoryTypeProvider().selectCategoryProvider;
+                            final category = CategoryModel(
+                              id: DateTime.now()
+                                  .millisecondsSinceEpoch
+                                  .toString(),
+                              type: value.selectCategoryProvider,
+                              name: name,
+                            );
 
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: const [
-
-                    RadioButton(title: 'Income', type: CategoryType.income),
-                    RadioButton(title: 'Expense', type: CategoryType.expense),
-
-                  ],
-                )
-                
-                ),
-              // Padding(padding: EdgeInsets.all(8.0),
-              //          child: Row(children: [
-              //                       Radio(value: 1, groupValue: _value, onChanged: (value){
-              //                                _value=value;
-              //                                    }, 
-              //                            ),
-              //                       const SizedBox(width: 10.0,),
-              //                       const Text('Income'),
-
-              //                       const SizedBox(width: 15.0,),
-              //                       Radio(value: 2, groupValue: _value, onChanged: (value){
-              //                            _value=value;
-              //                        },
-              //                            ),
-              //                       const SizedBox(width: 10.0,),
-              //                      const Text('Expense'),
-
-              //                      ],
-
-              //                ),
-              //                ),
-              Padding(padding: EdgeInsets.all(8.0),
-                      child: ElevatedButton(onPressed: (){
-
-                                final _name= _nameEditingController.text;
-                                if(_name.isEmpty)
-                                {
-                                  return;
-                                }
-                                final _type=selectedCategoryNotifier.value;
-                                final _category= CategoryModel(
-                                  id: DateTime.now().millisecondsSinceEpoch.toString(), 
-                                  name: _name, 
-                                  type: _type);
-
-                                  CategoryDB.instance.insertCategory(_category);
-                                  Navigator.of(ctx).pop();
-
-                                   }, 
-                                    child:const  Text('Add')),)
-             
-          ],
+                            context
+                                .read<CategoryProvider>()
+                                .insertCategory(category);
+                            Navigator.of(context).pop();
+                          },
+                          child: const Hero(
+                            tag: 'CategoryAppBottomSheet',
+                            child: Text(
+                              'Add',
+                              style: TextStyle(
+                                // color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
-  },
-  );
+      }));
 }
 
 class RadioButton extends StatelessWidget {
-  final String title;
-  final CategoryType type;
-  
-  const RadioButton({super.key,
-  required this.title,
-  required this.type,
+  const RadioButton({
+    super.key,
+    required this.title,
+    required this.type,
   });
 
+  final String title;
+  final CategoryType type;
+
   @override
- 
-
-
   Widget build(BuildContext context) {
     return Row(
-
       children: [
-        ValueListenableBuilder(
-          valueListenable: selectedCategoryNotifier, 
-          builder: (BuildContext ctx, CategoryType newCategory, Widget? _){
-             return Radio<CategoryType>(
-                   value: type,
-                    groupValue: newCategory, 
-                   onChanged: (value){
-                   if (value == null){
-                          return;
-                       }
-              selectedCategoryNotifier.value=value;
-              selectedCategoryNotifier.notifyListeners();
-             
-
-           },
-           );
-          },
-
-          ),
-       
+        Consumer<CategoryTypeProvider>(builder: (context, provider, child) {
+          return Radio<CategoryType>(
+            value: type,
+            groupValue: provider.selectCategoryProvider,
+            onChanged: (value) {
+              provider.onChanging(value, type);
+            },
+          );
+        }),
         Text(title),
       ],
     );
   }
 }
-
-// class RadioButton extends StatelessWidget {
-//   final String title;
-//   final CategoryType type;
-
-//   const RadioButton({
-//     key? key,
-
-//   })
-  
-  
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return  Row(
-//       children: [
-//         Radio<CategoryType>(value: value, groupValue: groupValue, onChanged: onChanged),
-//         Text(title),
-//       ],
-//     );
-//   }
-// }
