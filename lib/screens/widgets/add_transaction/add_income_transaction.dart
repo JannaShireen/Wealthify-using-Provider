@@ -153,7 +153,7 @@ class ScreenAddIncomeTransaction extends StatelessWidget {
                                   value: e.id,
                                   child: Text(e.name),
                                   onTap: () {
-                                    Provider.of<CategoryProvider>(context)
+                                    Provider.of<CategoryProvider>(context,listen:false)
                                         .refreshUI();
 
                                     tProvider.selectedCategoryModel = e;
